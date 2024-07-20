@@ -34,7 +34,6 @@ func DownloadAudio(id string) error {
 	for qualityIndex >= 0 {
 		err := downloadSong(id, outputDir, outputQuality, mimetype, language)
 		if err == nil {
-			qualityIndex = 4
 			return nil
 		}
 		if errors.Is(err, errInvalidFormat) {
@@ -73,7 +72,6 @@ func DownloadVideo(id string) error {
 	for qualityIndex >= 0 {
 		err := downloadVideo(id, outputDir, outputQuality, mimetype, language)
 		if err == nil {
-			qualityIndex = 4
 			return nil
 		}
 		if errors.Is(err, errInvalidFormat) {
