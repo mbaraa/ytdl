@@ -106,7 +106,7 @@ func downloadVideo(id, outputDir, outputQuality, mimetype, language string) erro
 	if err := checkFFMPEG(); err != nil {
 		return err
 	}
-	err = downloaderInstance.DownloadComposite(context.Background(), id+".mp3", video, outputQuality, mimetype, language)
+	err = downloaderInstance.DownloadComposite(context.Background(), id+".mp4", video, outputQuality, mimetype, language)
 	if err != nil {
 		return err
 	}
