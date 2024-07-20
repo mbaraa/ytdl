@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 
@@ -79,12 +80,25 @@ func (dl *downloader) DownloadComposite(ctx context.Context, outputFile string, 
 	}
 	outputDir := filepath.Dir(destFile)
 
-	// Create temporary audio file
-	audioFile, err := os.Create(path.Join(outputDir, outputFile))
+	// Create temporary video file
+	videoFile, err := os.CreateTemp(outputDir, "youtube_*.m4v")
 	if err != nil {
 		return err
 	}
-	// defer os.Remove(audioFile.Name())
+	defer os.Remove(videoFile.Name())
+
+	// Create temporary audio file
+	audioFile, err := os.CreateTemp(outputDir, "youtube_*.m4a")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(audioFile.Name())
+
+	log.Debug("Downloading video file...")
+	err = dl.videoDLWorker(ctx, videoFile, v, videoFormat)
+	if err != nil {
+		return err
+	}
 
 	log.Debug("Downloading audio file...")
 	err = dl.videoDLWorker(ctx, audioFile, v, audioFormat)
@@ -92,7 +106,20 @@ func (dl *downloader) DownloadComposite(ctx context.Context, outputFile string, 
 		return err
 	}
 
-	return nil
+	//nolint:gosec
+	ffmpegVersionCmd := exec.Command("ffmpeg", "-y",
+		"-i", videoFile.Name(),
+		"-i", audioFile.Name(),
+		"-c", "copy", // Just copy without re-encoding
+		"-shortest", // Finish encoding when the shortest input stream ends
+		destFile,
+		"-loglevel", "warning",
+	)
+	ffmpegVersionCmd.Stderr = os.Stderr
+	ffmpegVersionCmd.Stdout = os.Stdout
+	log.Info("merging video and audio", "output", destFile)
+
+	return ffmpegVersionCmd.Run()
 }
 
 // DownloadAudio : Just downloads audio stream.
