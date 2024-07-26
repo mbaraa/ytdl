@@ -147,7 +147,6 @@ func (dl *downloader) DownloadAudio(ctx context.Context, outputFile string, v *y
 	if err != nil {
 		return err
 	}
-	// defer os.Remove(audioFile.Name())
 
 	log.Debug("Downloading audio file...")
 	err = dl.videoDLWorker(ctx, audioFile, v, audioFormat)
